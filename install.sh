@@ -63,7 +63,7 @@ else
         chmod +x "$BIN_DIR/translate"
         
         echo -e "${GREEN}¡Instalación global completada con éxito en Windows!${NC}"
-        echo "Tu padre ya puede abrir cualquier terminal de Git Bash y escribir: translate"
+        echo 'Ya puedes ejecutar Translate CLI escribiendo translate abreviatura_idioma "texto a traducir"'
     else
         echo -e "${RED}[ERROR] No se pudo encontrar la ruta global /usr/bin en Git Bash.${NC}"
         exit 1
