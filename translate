@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+import sys
+import os
+
+# Validación e importación de la librería obligatoria
+try:
+    from deep_translator import GoogleTranslator
+except ImportError:
+    print("[Error]: Falta la librería 'deep-translator'.")
+    print("Ejecuta antes de usar: pip install deep-translator")
+    sys.exit(1)
+
+def mostrar_ayuda():
+    print("Uso de la App de Traducción Avanzada:")
+    print('  translate <idioma_destino> "<texto a traducir>"')
+    print('  translate <idioma_destino> <ruta_archivo.txt>')
+    print("\n[Función] Soporte Inverso Inteligente:")
+    print('  Si configuras "en" pero escribes en inglés, se traducirá automáticamente a "es".')
+    sys.exit(0)
+
+def main():
+    # El script requiere mínimo el idioma (argv[1]) y el texto o archivo (argv[2])
+    if len(sys.argv) < 3 or sys.argv[1] in ["--help", "-h"]:
+        mostrar_ayuda()
+
+    idioma_destino = sys.argv[1].lower()
+    entrada_usuario = sys.argv[2]
+
+    # --- CARACTERÍSTICA: MANEJO DE ARCHIVOS DE TEXTO (.txt) ---
+    if os.path.isfile(entrada_usuario):
+        print(f"[*] Detectado archivo de texto: {entrada_usuario}")
+        try:
+            with open(entrada_usuario, 'r', encoding='utf-8') as f:
+                contenido = f.read()
+            
+            print("[*] Conectando con el servidor y traduciendo archivo...")
+            texto_traducido = GoogleTranslator(source='auto', target=idioma_destino).translate(contenido)
+            
+            # Formatear el nombre del archivo de salida (ej: notas_traducido.txt)
+            nombre_base, extension = os.path.splitext(entrada_usuario)
+            archivo_salida = f"{nombre_base}_traducido{extension}"
+            
+            with open(archivo_salida, 'w', encoding='utf-8') as f_out:
+                f_out.write(texto_traducido)
+                
+            print(f"[¡Éxito!] Archivo guardado como: {archivo_salida}")
+            
+        except Exception as e:
+            print(f"[Error de procesamiento en archivo]: {e}")
+            
+    # --- CARACTERÍSTICA: PROCESAMIENTO DE TEXTO DIRECTO EN CONSOLA ---
+    else:
+        # Unimos los argumentos restantes por si no se usaron comillas en la frase
+        texto_a_traducir = " ".join(sys.argv[2:])
+        
+        # --- CARACTERÍSTICA: SOPORTE MULTIIDIOMA INVERSO ---
+        try:
+            # Lógica condicional: Si el destino pedido es inglés ('en'), verificamos si el texto ya está en inglés
+            if idioma_destino == 'en':
+                # Hacemos una traducción de prueba hacia el inglés
+                traductor_test = GoogleTranslator(source='auto', target='en')
+                # Si el resultado es igual al original, el software deduce que la entrada ya era texto en inglés
+                if traductor_test.translate(texto_a_traducir).lower() == texto_a_traducir.lower():
+                    idioma_destino = 'es'  # Reorientamos el flujo hacia el español de forma automatizada
+                    print("[Asistente Inteligente]: Detectado texto en inglés. Traduciendo a español...")
+
+            # Ejecución de la traducción final
+            traductor = GoogleTranslator(source='auto', target=idioma_destino)
+            resultado = traductor.translate(texto_a_traducir)
+            
+            print(f"\n[Original]:  {texto_a_traducir}")
+            print(f"[Traducido]: {resultado}\n")
+        except Exception as e:
+            print(f"[Error de red o traducción]: {e}")
+
+if __name__ == "__main__":
+    main()
+
